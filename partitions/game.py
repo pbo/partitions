@@ -3,31 +3,6 @@ from itertools import compress
 from . import core
 
 
-# def _iter_unique_permutations(elements):
-#     # Function that returns unique permutations
-#     class UniqueElement:
-#         def __init__(self, value, occurrences):
-#             self.value = value
-#             self.occurrences = occurrences
-#
-#     def helper(list_unique, result_list, d):
-#         if d < 0:
-#             yield tuple(result_list)
-#         else:
-#             for i in list_unique:
-#                 if i.occurrences > 0:
-#                     result_list[d] = i.value
-#                     i.occurrences -= 1
-#                     for g in helper(list_unique, result_list, d - 1):
-#                         yield g
-#                     i.occurrences += 1
-#
-#     list_unique = [UniqueElement(i, elements.count(i)) for i in set(elements)]
-#     u = len(elements)
-#
-#     return helper(list_unique, [0] * u, u - 1)
-
-
 def payoff_blotto_sign(a, b):
     """
     Returns:
