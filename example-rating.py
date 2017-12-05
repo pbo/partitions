@@ -18,8 +18,11 @@ def print_raiting_df(df):
 n, m = 25, 5
 partitions = core.all_partitions(n, m)
 
-# pm = game.payoff_matrix_lotto_permute(partitions)
-pm = data.load_payoff_matrix_lotto_permute(n, m)
+try:
+    pm = data.load_payoff_matrix_lotto_permute(n, m)
+except FileNotFoundError:
+    pm = game.payoff_matrix_lotto_permute(partitions)
+
 sign_pm = game.matrix_apply_scoring(pm, game.scoring_sign)
 sign_pm_df = pd.DataFrame(sign_pm, index=partitions, columns=partitions)
 partitions_raiting = (-sign_pm_df.sum() / (len(sign_pm_df.columns) - 1)).sort_values()
