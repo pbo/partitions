@@ -82,10 +82,10 @@ def payoff_round_robin(paritions_a, partitions_b, payoff_func):
 
 def payoff_graph(payoff_m, adjacency_m, player_i, player_j):
     l, d, w = 0, 0, 0
-    range_i = list(compress(range(len(adjacency_m)), adjacency_m[player_i]))
-    for payoff_row in compress(payoff_m, adjacency_m[player_j]):
-        for i in range_i:
-            l1, d1, w1 = payoff_row[i]
+    range_j = list(compress(range(len(adjacency_m)), adjacency_m[player_j]))
+    for payoff_row in compress(payoff_m, adjacency_m[player_i]):
+        for j in range_j:
+            l1, d1, w1 = payoff_row[j]
             l += l1
             d += d1
             w += w1
