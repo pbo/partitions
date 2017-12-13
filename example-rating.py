@@ -14,7 +14,7 @@ from partitions import *
 
 def average_payoff(pm, scoring_func):
     df = pd.DataFrame(game.matrix_apply_scoring(pm, scoring_func))
-    return (-df.sum() / (len(df.columns) - 1)).values
+    return (df.sum(axis=1) / (len(df.columns) - 1)).values
 
 n, m = 16, 6
 partitions = core.all_partitions(n, m)
