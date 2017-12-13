@@ -119,6 +119,7 @@ def payoff_matrix_zero_sum(players, payoff_func, progress=None):
 def payoff_matrix_lotto_permute(partitions, progress=None):
     def payoff_helper(partitions_a, partitions_b):
         if len(partitions_a) < len(partitions_a):
+            # Use the antisymmetry of the payoff function
             w, d, losses = payoff_one_agaist_all(partitions_b[0], partitions_a,
                                                  payoff_blotto_sign)
         else:
