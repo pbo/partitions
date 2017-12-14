@@ -1,7 +1,6 @@
 # coding: utf-8
 
 import random
-import numpy as np
 from math import inf, factorial
 from operator import neg, mul, itemgetter
 from functools import reduce, lru_cache
@@ -96,7 +95,7 @@ class Composition(object):
         """
         Number of unique parts of the composition
         """
-        return len(Counter(self._list).values())
+        return len(set(self._list))
 
     @property
     def m(self):
@@ -293,33 +292,39 @@ def distance_max(a, b):
     return max(abs(x - y) for x, y in zip(a, b))
 
 
-def _antimetric_matrix(partitions, func, neg_operator=neg,
-                      dtype=np.float64):
-    length = len(partitions)
-    M = np.zeros((length, length), dtype=dtype)
-    for i, j in np.array(np.triu_indices(length)).T:
-        M[i, j] = func(partitions[i], partitions[j])
-        M[j, i] = neg_operator(M[i, j])
-    return M
-
-
-def _symmetric_matrix(partitions, func, dtype=np.float64):
-    return _antimetric_matrix(partitions, func, neg_operator=lambda x: x,
-                              dtype=dtype)
-
-
 def distance_matrix(partitions, distance_func=distance_max):
     """
     The distance from any to any partitions in a given array.
     """
-    return _symmetric_matrix(partitions, distance_func)
+    length = len(partitions)
+    matrix = [[None for col in range(length)] for row in range(length)]
+
+    for i, a in enumerate(partitions):
+        for j, b in enumerate(partitions):
+            if j < i:
+                continue
+
+            r = distance_max(a, b)
+            matrix[i][j] = r
+            matrix[j][i] = r
+
+    return matrix
 
 
 def family_adjacency_matrix(partitions, branches=[-1, 0, 1]):
-    def adjacency_func(a, b):
-        return (a.height - b.height in branches) and distance_max(a, b) <= 1
+    length = len(partitions)
+    matrix = [[None for col in range(length)] for row in range(length)]
 
-    return _symmetric_matrix(partitions, adjacency_func)
+    for i, a in enumerate(partitions):
+        for j, b in enumerate(partitions):
+            if j < i:
+                continue
+
+            r = (a.height - b.height in branches) and distance_max(a, b) <= 1
+            matrix[i][j] = r
+            matrix[j][i] = r
+
+    return matrix
 
 
 def iter_partitions(n, m, zeros=True):

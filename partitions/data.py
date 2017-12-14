@@ -76,7 +76,7 @@ def load_e_optimal_partitions(n, m, drop_probabilities=False):
     return result["attacker"], result["defender"]
 
 
-def load_payoff_matrix_lotto_permute(n, m):
+def load_payoff_matrix_permute(n, m):
     data_fname = "data/individual-payoff-matrix_{}-{}.npz".format(n, m)
     data_fpath = pkg_resources.resource_filename(__name__, data_fname)
     return np.load(data_fpath)["arr_0"]

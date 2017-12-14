@@ -22,9 +22,9 @@ df = pd.DataFrame(partitions)
 
 # Load or calculate a payoff matrix for all partitions
 try:
-    pm = data.load_payoff_matrix_lotto_permute(n, m)
+    pm = data.load_payoff_matrix_permute(n, m)
 except FileNotFoundError:
-    pm = game.payoff_matrix_lotto_permute(partitions)
+    pm = game.payoff_matrix_permute(partitions)
 
 # Calculate and add to the dataframe average payoff using a specified
 # scoring function
@@ -34,17 +34,23 @@ df = df.assign(avg_permute=average_payoff(
 
 # Calculate and add to the dataframe average payoff for the different type of
 # payoff function based on partition resource function
-df = df.assign(avg_resource=average_payoff(
-    game.payoff_matrix_zero_sum(partitions, game.payoff_lotto_resource),
+df = df.assign(avg_lotto=average_payoff(
+    game.payoff_matrix_zero_sum(partitions, game.payoff_lotto),
     game.scoring_sign))
 
 # Calculate and add to the dataframe average payoff for the game between
 # partition families
 adjacency_m = core.family_adjacency_matrix(partitions, branches=[-1, 0, 1])
-family_pm = game.payoff_matrix_graph(pm, adjacency_m)
-df = df.assign(family_avg=average_payoff(
+family_pm = game.payoff_matrix_command_vs_command(
+    pm, adjacency_m, game.aggregate_sum)
+df = df.assign(family_vs_family_avg=average_payoff(
     family_pm,
     game.scoring_sign))
+
+# Calculate and add to the dataframe average payoff for the game between
+# partition families vs all other partitions
+df = df.assign(family_vs_all_avg=game.payoff_list_command_vs_all(
+    pm, adjacency_m, game.scoring_sign))
 
 # Print the whole dataframe
 for t in df.itertuples():
