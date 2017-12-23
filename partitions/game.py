@@ -48,10 +48,10 @@ def payoff_permute(x, y):
     Returns tuple of normalized (sum == 1) values of (losses, draws, wins).
     """
     if x.unique_parts < y.unique_parts:
-        return payoff_all_vs_one(x.iter_permutations, y,
+        return payoff_all_vs_one(x.iter_permutations(), y,
                                  payoff_blotto_sign, payoff_reduce_sum)
     else:
-        return payoff_one_vs_all(x, y.iter_permutations,
+        return payoff_one_vs_all(x, y.iter_permutations(),
                                  payoff_blotto_sign, payoff_reduce_sum)
 
 
