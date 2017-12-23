@@ -4,18 +4,18 @@ from functools import reduce
 from . import core
 
 
-def payoff_blotto_sign(a, b):
+def payoff_blotto_sign(x, y):
     """
     Returns:
-    (0, 0, 1) -- a wins, b loss;
+    (0, 0, 1) -- x wins, y loss;
     (0, 1, 0) -- draw;
-    (1, 0, 0)-- a loss, b wins.
+    (1, 0, 0)-- x loss, y wins.
     """
     wins, losses = 0, 0
-    for x, y in zip(a, b):
-        if x > y:
+    for x_i, y_i in zip(x, y):
+        if x_i > y_i:
             wins += 1
-        elif x < y:
+        elif x_i < y_i:
             losses += 1
 
     if wins > losses:
@@ -26,37 +26,37 @@ def payoff_blotto_sign(a, b):
     return (0, 1, 0)
 
 
-def payoff_lotto(a, b):
+def payoff_lotto(x, y):
     """
     Returns tuple of normalized (sum == 1) values of (losses, draws, wins).
     """
     losses, draws, wins = 0, 0, 0
-    for l_a in a:
-        for l_b in b:
-            if l_a < l_b:
+    for x_i in x:
+        for y_i in y:
+            if x_i < y_i:
                 losses += 1
-            elif l_a == l_b:
+            elif x_i == y_i:
                 draws += 1
             else:
                 wins += 1
-    sz = len(a) * len(b)
-    return (losses / sz, draws / sz, wins / sz)
+    count = len(x) * len(y)
+    return (losses / count, draws / count, wins / count)
 
 
-def payoff_permute(a, b):
+def payoff_permute(x, y):
     """
     Returns tuple of normalized (sum == 1) values of (losses, draws, wins).
     """
-    if a.unique_parts < b.unique_parts:
-        return payoff_all_vs_one(a.iter_permutations, b,
+    if x.unique_parts < y.unique_parts:
+        return payoff_all_vs_one(x.iter_permutations, y,
                                  payoff_blotto_sign, aggregate_sum)
     else:
-        return payoff_one_vs_all(a, b.iter_permutations,
+        return payoff_one_vs_all(x, y.iter_permutations,
                                  payoff_blotto_sign, aggregate_sum)
 
 
 def payoff_from_matrix(payoff_matrix):
-    return lambda index_a, index_b: payoff_matrix[index_a][index_b]
+    return lambda index_x, index_y: payoff_matrix[index_x][index_y]
 
 
 class _Counting(object):
@@ -98,39 +98,39 @@ def payoff_reduce_sign_sum(ldw_result, ldw_next):
         return (ldw_result[0],     ldw_result[1] + 1, ldw_result[2])
 
 
-def payoff_one_vs_all(a, partitions_b, payoff_func, payoff_reduce_func):
-    return payoff_reduce((payoff_func(a, b) for b in partitions_b),
+def payoff_one_vs_all(x, ys, payoff_func, payoff_reduce_func):
+    return payoff_reduce((payoff_func(x, y) for y in ys), payoff_reduce_func)
+
+
+def payoff_all_vs_one(xs, y, payoff_func, payoff_reduce_func):
+    return payoff_reduce((payoff_func(x, y) for x in xs), payoff_reduce_func)
+
+
+def payoff_round_robin(xs, ys, payoff_func, payoff_reduce_func):
+    return payoff_reduce((payoff_func(x, y) for x, y in product(xs, ys)),
                          payoff_reduce_func)
 
 
-def payoff_all_vs_one(partitions_a, b, payoff_func, payoff_reduce_func):
-    return payoff_reduce((payoff_func(a, b) for a in partitions_a),
-                         payoff_reduce_func)
+def payoff_matrix_antisymmetric(xs, ys, payoff_func, progress=None):
+    size = len(xs)
 
+    if size != len(ys):
+        raise ValueError('Lists must be the same size.')
 
-def payoff_round_robin(partitions_a, partitions_b,
-                       payoff_func, payoff_reduce_func):
-    return payoff_reduce((payoff_func(a, b)
-                          for a, b in product(partitions_a, partitions_b)),
-                         payoff_reduce_func)
-
-
-def payoff_matrix_zero_sum(players, payoff_func, progress=None):
-    length = len(players)
-    matrix = [[None for col in range(length)] for row in range(length)]
+    matrix = [[None for col in range(size)] for row in range(size)]
 
     if progress is not None:
-        progress.start(total=(length + 1) * length / 2)
+        progress.start(total=(size + 1) * size / 2)
 
-    for i, a in enumerate(players):
-        for j, b in enumerate(players):
+    for i, x in enumerate(xs):
+        for j, y in enumerate(ys):
             if j < i:
                 continue
 
             if progress is not None:
                 progress.progress()
 
-            l, d, w = payoff_func(a, b)
+            l, d, w = payoff_func(x, y)
 
             matrix[i][j] = (l, d, w)
             matrix[j][i] = (w, d, l)
@@ -138,48 +138,56 @@ def payoff_matrix_zero_sum(players, payoff_func, progress=None):
     return matrix
 
 
-def payoff_matrix(players, payoff_func, progress=None):
-    length = len(players)
-    matrix = [[None for col in range(length)] for row in range(length)]
+def payoff_matrix(xs, ys, payoff_func, progress=None):
+    size_xs = len(xs)
+    size_ys = len(ys)
+    matrix = [[None for col in range(size_ys)] for row in range(size_xs)]
 
     if progress is not None:
-        progress.start(total=length * length)
+        progress.start(total=size_xs * size_ys)
 
-    for i, a in enumerate(players):
-        for j, b in enumerate(players):
+    for i, x in enumerate(xs):
+        for j, y in enumerate(ys):
             if progress is not None:
                 progress.progress()
 
-            matrix[i][j] = payoff_func(a, b)
+            matrix[i][j] = payoff_func(x, y)
 
     return matrix
 
 
-def payoff_matrix_permute(partitions, progress=None):
-    def payoff_helper(partitions_a, partitions_b):
-        if len(partitions_a) < len(partitions_a):
-            return payoff_all_vs_one(partitions_a, partitions_b[0],
+def payoff_matrix_permute(xs, ys, progress=None):
+    def payoff_helper(xs, ys):
+        if len(xs) < len(ys):
+            return payoff_all_vs_one(xs, ys[0],
                                      payoff_blotto_sign, aggregate_sum)
         else:
-            return payoff_one_vs_all(partitions_a[0], partitions_b,
+            return payoff_one_vs_all(xs[0], ys,
                                      payoff_blotto_sign, aggregate_sum)
+    if xs == ys:
+        ps = [list(x.iter_permutations()) for x in xs]
+        return payoff_matrix_antisymmetric(ps, ps, payoff_helper, progress)
+    else:
+        ps_xs = [list(x.iter_permutations()) for x in xs]
+        ps_ys = [list(y.iter_permutations()) for y in ys]
+        return payoff_matrix_antisymmetric(ps_xs, ps_ys, payoff_helper,
+                                           progress)
 
-    all_permutations = [list(p.iter_permutations()) for p in partitions]
-    return payoff_matrix_zero_sum(all_permutations, payoff_helper, progress)
 
-
-def payoff_matrix_adjacencies_vs_adjacencies(adjacency_m, payoff_m,
+def payoff_matrix_adjacencies_vs_adjacencies(adjacency_m_xs, adjacency_m_ys,
+                                             payoff_m_xs_vs_ys,
                                              payoff_reduce_func,
                                              progress=None):
-    indexes = list(range(len(adjacency_m)))
+    indexes_xs = list(range(len(adjacency_m_xs)))
+    indexes_ys = list(range(len(adjacency_m_ys)))
 
     def payoff_helper(i, j):
         return payoff_round_robin(
-            list(compress(indexes, adjacency_m[i])),
-            list(compress(indexes, adjacency_m[j])),
-            payoff_from_matrix(payoff_m), payoff_reduce_func)
+            list(compress(indexes_xs, adjacency_m_xs[i])),
+            list(compress(indexes_ys, adjacency_m_ys[j])),
+            payoff_from_matrix(payoff_m_xs_vs_ys), payoff_reduce_func)
 
-    return payoff_matrix(indexes, payoff_helper, progress)
+    return payoff_matrix(indexes_xs, indexes_ys, payoff_helper, progress)
 
 
 def payoff_matrix_adjacencies_vs_all(adjacency_m, payoff_m,
@@ -192,7 +200,7 @@ def payoff_matrix_adjacencies_vs_all(adjacency_m, payoff_m,
             j,
             payoff_from_matrix(payoff_m), payoff_reduce_func)
 
-    return payoff_matrix(indexes, payoff_helper, progress)
+    return payoff_matrix(indexes, indexes, payoff_helper, progress)
 
 
 def scoring_zero_sum(losses, draws, wins):

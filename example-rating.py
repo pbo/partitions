@@ -16,7 +16,7 @@ def average_payoff(pm, scoring_func):
     df = pd.DataFrame(game.matrix_apply_scoring(pm, scoring_func))
     return (df.sum(axis=1) / (len(df.columns) - 1)).values
 
-n, m = 16, 6
+n, m = 16, 4
 partitions = core.all_partitions(n, m)
 df = pd.DataFrame(partitions)
 
@@ -35,14 +35,15 @@ df = df.assign(avg_permute=average_payoff(
 # Calculate and add to the dataframe average payoff for the different type of
 # payoff function based on partition resource function
 df = df.assign(avg_lotto=average_payoff(
-    game.payoff_matrix_zero_sum(partitions, game.payoff_lotto),
+    game.payoff_matrix_antisymmetric(partitions, partitions,
+                                     game.payoff_lotto),
     game.scoring_sign))
 
 # Calculate and add to the dataframe average payoff for the game between
 # partition families
 adjacency_m = core.family_adjacency_matrix(partitions, branches=[-1, 0, 1])
 family_pm = game.payoff_matrix_adjacencies_vs_adjacencies(
-    adjacency_m, pm, game.payoff_reduce_sign_sum)
+    adjacency_m, adjacency_m, pm, game.payoff_reduce_sign_sum)
 df = df.assign(family_vs_family_avg=average_payoff(
     family_pm,
     game.scoring_sign))
