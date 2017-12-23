@@ -174,10 +174,11 @@ def payoff_matrix_permute(xs, ys, progress=None):
                                            progress)
 
 
-def payoff_matrix_adjacencies_vs_adjacencies(adjacency_m_xs, adjacency_m_ys,
-                                             payoff_m_xs_vs_ys,
-                                             payoff_reduce_func,
-                                             progress=None):
+def payoff_matrix_neighbourhood_vs_neighbourhood(adjacency_m_xs,
+                                                 adjacency_m_ys,
+                                                 payoff_m_xs_vs_ys,
+                                                 payoff_reduce_func,
+                                                 progress=None):
     indexes_xs = list(range(len(adjacency_m_xs)))
     indexes_ys = list(range(len(adjacency_m_ys)))
 
@@ -190,8 +191,8 @@ def payoff_matrix_adjacencies_vs_adjacencies(adjacency_m_xs, adjacency_m_ys,
     return payoff_matrix(indexes_xs, indexes_ys, payoff_helper, progress)
 
 
-def payoff_matrix_adjacencies_vs_all(adjacency_m, payoff_m,
-                                     payoff_reduce_func, progress=None):
+def payoff_matrix_neighbourhood_vs_all(adjacency_m, payoff_m,
+                                       payoff_reduce_func, progress=None):
     indexes = list(range(len(adjacency_m)))
 
     def payoff_helper(i, j):

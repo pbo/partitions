@@ -42,7 +42,7 @@ df = df.assign(avg_lotto=average_payoff(
 # Calculate and add to the dataframe average payoff for the game between
 # partition families
 adjacency_m = core.family_adjacency_matrix(partitions, branches=[-1, 0, 1])
-family_pm = game.payoff_matrix_adjacencies_vs_adjacencies(
+family_pm = game.payoff_matrix_neighbourhood_vs_neighbourhood(
     adjacency_m, adjacency_m, pm, game.payoff_reduce_sign_sum)
 df = df.assign(family_vs_family_avg=average_payoff(
     family_pm,
@@ -51,7 +51,7 @@ df = df.assign(family_vs_family_avg=average_payoff(
 # Calculate and add to the dataframe average payoff for the game between
 # partition families vs all other partitions
 df = df.assign(family_vs_all_avg=average_payoff(
-    game.payoff_matrix_adjacencies_vs_all(adjacency_m, pm,
+    game.payoff_matrix_neighbourhood_vs_all(adjacency_m, pm,
                                           game.payoff_reduce_sign_sum),
     game.scoring_sign))
 
