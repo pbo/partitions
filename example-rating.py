@@ -16,6 +16,7 @@ def average_payoff(pm, scoring_func):
     df = pd.DataFrame(game.matrix_apply_scoring(pm, scoring_func))
     return (df.sum(axis=1) / (len(df.columns) - 1)).values
 
+
 n, m = 16, 4
 partitions = core.all_partitions(n, m)
 df = pd.DataFrame(partitions)
@@ -52,7 +53,7 @@ df = df.assign(family_vs_family_avg=average_payoff(
 # partition families vs all other partitions
 df = df.assign(family_vs_all_avg=average_payoff(
     game.payoff_matrix_neighbourhood_vs_all(adjacency_m, pm,
-                                          game.payoff_reduce_sign_sum),
+                                            game.payoff_reduce_sign_sum),
     game.scoring_sign))
 
 
