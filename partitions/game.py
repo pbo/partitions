@@ -98,6 +98,17 @@ def payoff_reduce_sign_sum(ldw_result, ldw_next):
         return (ldw_result[0],     ldw_result[1] + 1, ldw_result[2])
 
 
+def payoff_permute_matrix(payoff_m,
+                          components_payoff_reduce_func=payoff_reduce_sign_sum,
+                          permutations_payoff_reduce_func=payoff_reduce_sign_sum):
+    indexes = range(len(payoff_m))
+    return payoff_reduce(
+        (payoff_reduce((row[i] for i, row in zip(row_indexes, payoff_m)),
+                       components_payoff_reduce_func)
+         for row_indexes in permutations(indexes)),
+        permutations_payoff_reduce_func)
+
+
 def payoff_one_vs_all(x, ys, payoff_func, payoff_reduce_func):
     return payoff_reduce((payoff_func(x, y) for y in ys), payoff_reduce_func)
 
@@ -117,7 +128,7 @@ def payoff_matrix_antisymmetric(xs, ys, payoff_func, progress=None):
     if size != len(ys):
         raise ValueError('Lists must be the same size.')
 
-    matrix = [[None for col in range(size)] for row in range(size)]
+    matrix = [[None for _ in range(size)] for _ in range(size)]
 
     if progress is not None:
         progress.start(total=(size + 1) * size / 2)
@@ -141,7 +152,7 @@ def payoff_matrix_antisymmetric(xs, ys, payoff_func, progress=None):
 def payoff_matrix(xs, ys, payoff_func, progress=None):
     size_xs = len(xs)
     size_ys = len(ys)
-    matrix = [[None for col in range(size_ys)] for row in range(size_xs)]
+    matrix = [[None for _ in range(size_ys)] for _ in range(size_xs)]
 
     if progress is not None:
         progress.start(total=size_xs * size_ys)
