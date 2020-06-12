@@ -304,7 +304,7 @@ def distance_matrix(partitions, distance_func=distance_max):
             if j < i:
                 continue
 
-            r = distance_max(a, b)
+            r = distance_func(a, b)
             matrix[i][j] = r
             matrix[j][i] = r
 
