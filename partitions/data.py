@@ -2,7 +2,7 @@
 
 import pkg_resources
 import numpy as np
-import partitions
+from . import core
 
 
 def load_e_optimal_partitions(n, m, drop_probabilities=False):
@@ -66,7 +66,7 @@ def load_e_optimal_partitions(n, m, drop_probabilities=False):
     result = {"attacker": [], "defender": []}
     for record in data:
         player = record[0]
-        partition = partitions.Partition([record[2 + i] for i in range(m)])
+        partition = core.Partition([record[2 + i] for i in range(m)])
         if drop_probabilities:
             result[player].append(partition)
         else:
